@@ -13,5 +13,7 @@ class HouseAdmin(admin.ModelAdmin):
         'price_per_night',
         'pets_allowed'
     )
+    """
     search_fields=("address",)  #if onle one element in tuple, put comma in the end
     #address__startswith.contains, ...
+    """
