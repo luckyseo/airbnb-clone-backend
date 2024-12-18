@@ -8,6 +8,9 @@ class User(AbstractUser):
 
     class GenderChoices(models.TextChoices):
         MALE = ("male", "Male")
+        """
+        blabla = ("db","show up on the website")
+        """
         FEMALE = ("female", "Female")
 
     class LanguageChoices(models.TextChoices):
@@ -25,7 +28,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=150, default="")
     is_host = models.BooleanField(default=False)  # null=True: existing users :NULL
 
-    avatar = models.ImageField(blank=True)
+    avatar = models.ImageField(blank=True)  # not required default img
     # cmd poetry add Pillow
     gender = models.CharField(max_length=10, choices=GenderChoices.choices)
     language = models.CharField(max_length=2, choices=LanguageChoices.choices)
