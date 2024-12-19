@@ -5,4 +5,19 @@ from common.models import CommonModel
 
 
 class Wishlist(CommonModel):
-    pass
+    title = models.CharField(
+        max_length=100,
+    )
+    user = models.ForeignKey(
+        "users.User",
+        on_delete=models.CASCADE,
+    )
+    rooms = models.ManyToManyField(
+        "rooms.Room",
+    )
+    experiences = models.ManyToManyField(
+        "experiences.Experience",
+    )
+
+    def __str__(self):
+        return self.title
