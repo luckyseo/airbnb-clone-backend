@@ -6,4 +6,8 @@ from .models import Review
 
 @admin.register(Review)  # review is controlled by the class below
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ("__str__",)
+    list_display = (
+        "__str__",
+        "payload",
+    )
+    list_filter = ("rating",)
