@@ -9,6 +9,9 @@ class Room(CommonModel):
         PRIVATE_ROOM = ("private_room", "Private Room")
         SHARED_ROOM = ("shared_room", "Shared Room")
 
+    name = models.CharField(
+        max_length=150,
+    )
     country = models.CharField(
         max_length=50,
         default="한국",
@@ -37,14 +40,37 @@ class Room(CommonModel):
         "users.User",
         on_delete=models.CASCADE,
     )
-    amenities = models.ManyToManyField("rooms.Amenity")
+    amenities = models.ManyToManyField(
+        "rooms.Amenity",
+    )
+    """
+    one to many : e.g an owner has many rooms
+    many to many : e.g a room has many amenities & a amenity belongs to many rooms
+    """
+
+    def __str__(self):  # show name variable of the instance isntead of object addr
+        return self.name
 
     # many to many rel
-    class Amenity(CommonModel):
-        name = models.CharField(
-            max_length=150,
-        )
-        description = models.CharField(
-            max_length=150,
-            null=True,
-        )
+
+
+class Amenity(CommonModel):
+    name = models.CharField(
+        max_length=150,
+    )
+    description = models.CharField(
+        max_length=150,
+        null=True,  # null in db
+        blank=True,  # website blank
+    )
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Amenities"
+        """
+         if you already have an app changing the name of the model will not be easy
+         since you already have data under a model there. 
+         It will also break your code.
+        """
