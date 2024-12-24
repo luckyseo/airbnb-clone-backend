@@ -22,8 +22,8 @@ class Booking(CommonModel):
     room = models.ForeignKey(
         "rooms.Room",
         null=True,
-        blank=True,  # for django admin
-        on_delete=models.SET_NULL,  # we might need to leave history
+        blank=True,  # for django admin form
+        on_delete=models.SET_NULL,  # we might need to leave booking history
     )
     experience = models.ForeignKey(
         "experiences.experience",
