@@ -5,4 +5,12 @@ from .models import Booking
 # Register your models here.
 @admin.register(Booking)
 class Booking(admin.ModelAdmin):
-    pass
+    list_display=(
+        "kind",
+        "user",
+        "room",
+        "experience",
+    )
+    list_filter=(
+        "kind",
+    )

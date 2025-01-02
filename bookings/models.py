@@ -30,11 +30,12 @@ class Booking(CommonModel):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
+    
     )
-    check_in = models.DateField(null=True, blank=True)
-    check_out = models.DateField(null=True, blank=True)
+    check_in = models.DateField(null=True, blank=True,)
+    check_out = models.DateField(null=True, blank=True,)
     experience_time = models.DateTimeField(null=True, blank=True)
     guests = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"{self.kind} / {self.user}"
+        return f"{self.kind.title} for: {self.user}"
