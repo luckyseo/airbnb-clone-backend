@@ -4,7 +4,7 @@ from rest_framework.exceptions import NotFound
 
 # from django.http import JsonResponse
 # from django.core import serializers
-from rest_framework.decorators import api_view
+# from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import CategorySerializer
 
@@ -20,22 +20,27 @@ class Categories(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = CategorySerializer(date=request.data)
+        serializer = CategorySerializer(data=request.data)
         if serializer.is_valid():
             new_category = serializer.save()
+            return Response(
+                CategorySerializer(new_category).data,
+            )
+        else:
             return Response(serializer.errors)
 
 
-class CategoryDetail(APIView):
-    def get_object(self, pk):
+class CategoryDetail(APIView):  # name diff from model name and class name
+    def get_object(self, pk):  # conventional way
         try:
             category = Category.objects.get(pk=pk)
+            return category
         except Category.DoesNotExist:
             raise NotFound
-        return category
 
     def get(self, request, pk):
         serializer = CategorySerializer(self.get_object(pk))
+        return Response(serializer.data)
 
     def put(self, request, pk):
         serializer = CategorySerializer(
