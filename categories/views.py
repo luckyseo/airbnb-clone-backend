@@ -11,8 +11,15 @@ from .serializers import CategorySerializer
 # Create your views here.
 from rest_framework.views import APIView
 from rest_framework.status import HTTP_204_NO_CONTENT
+from rest_framework.viewsets import ModelViewSet
 
 
+class CategoryViewSet(ModelViewSet):
+    serializer_class = CategorySerializer
+    queryset = Category.objects.all()
+
+
+"""
 class Categories(APIView):
     def get(self, request):
         all_categories = Category.objects.all()
@@ -57,3 +64,4 @@ class CategoryDetail(APIView):  # name diff from model name and class name
     def delete(self, request, pk):
         self.get_object(pk).delete()
         return Response(status=HTTP_204_NO_CONTENT)
+"""
