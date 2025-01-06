@@ -1,4 +1,4 @@
-from django.shortcuts import render
+# from django.shortcuts import render
 
 # Create your views here.
 from rest_framework.views import APIView
@@ -15,24 +15,26 @@ api/v1/rooms/amenities/1
 
 
 class Amenities(APIView):
-    def get(self, request):
+    def get(self, request):  # every method has self and request
         all_amenities = Amenity.objects.all()
-        serializer = AmenitySerializer(all_amenities, many=True)
+        serializer = AmenitySerializer(
+            all_amenities, many=True
+        )  # more than 1 object -> mant = True
         return Response(serializer.data)
 
     def post(self, request):
         serializer = AmenitySerializer(data=request.data)
         if serializer.is_valid():
-            amenity = serializer.save()
+            amenity = serializer.save()  #
             return Response(
-                AmenitySerializer(amenity).data,
+                AmenitySerializer(amenity).data,  # return new data
             )
         else:
             return Response(serializer.errors)
 
 
 class AmenitiesDetail(APIView):
-    def get_object(self, pk):
+    def get_object(self, pk):  # get pk object
         try:
             return Amenity.objects.get(pk=pk)
         except Amenity.DoesNotExist:
@@ -45,7 +47,7 @@ class AmenitiesDetail(APIView):
 
     def put(self, request, pk):
         amenity = self.get_object(pk)
-        serializer = AmenitySerializer(
+        serializer = AmenitySerializer(  # handle user sending data
             amenity,
             data=request.data,
             partial=True,
