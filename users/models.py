@@ -28,7 +28,7 @@ class User(AbstractUser):
     name = models.CharField(max_length=150, default="")
     is_host = models.BooleanField(default=False)  # null=True: existing users :NULL
 
-    avatar = models.ImageField(blank=True)  # not required default img
+    avatar = models.URLField(blank=True)  # not required default img
     # cmd poetry add Pillow
     gender = models.CharField(max_length=10, choices=GenderChoices.choices)
     language = models.CharField(max_length=2, choices=LanguageChoices.choices)
