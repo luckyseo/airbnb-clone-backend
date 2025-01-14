@@ -3,9 +3,13 @@ from .models import User
 
 
 class UserSerializer(ModelSerializer):
-    class meta:
+    class Meta:
         model = User
-        field = "__all__"
+        fields = (
+            "name",
+            "avatar",
+            "username",
+        )
 
 
 class PrivateUserSerializer(ModelSerializer):
