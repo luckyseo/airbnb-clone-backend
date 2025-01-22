@@ -20,6 +20,7 @@ from .serializers import (
 )
 from categories.models import Category
 from medias.serializers import PhotoSerializer
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 """
 api/v1/rooms/amenities/1
@@ -84,52 +85,54 @@ generate room, delete-> authentication needed!
 
 
 class Rooms(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         rooms = Room.objects.all()
         serializer = RoomListSerializer(rooms, many=True)
         return Response(serializer.data)
 
     def post(self, request):
-        if request.user.is_authenticated:  # check authenticated: logged in or not
-            serializer = RoomDetailSerializer(data=request.data)
-            if serializer.is_valid():
-                category_pk = request.data.get("category")
-                if not category_pk:
-                    raise ParseError(
-                        "Category is required"
-                    )  # 400 bad request for wrong data
-                try:
-                    category = Category.objects.get(pk=category_pk)
-                    if category.kind == Category.CategoryKindChocies.EXPERIENCES:
-                        raise ParseError("Cateogory kind should be rooms")
-                except Category.DoesNotExist:
-                    raise ParseError("Category does not exist")
-                try:
-                    # print(request.data.get('amenities'))
-                    with transaction.atomic():
-                        room = serializer.save(  # tells who is the user
-                            owner=request.user,  # this goes to validated_data para field of create() method
-                            category=category,
-                        )
-                        # when u post user provided data, it automatically call create() method
-                        amenities = request.data.get("amenities")
-                        for amenity_pk in amenities:
-                            amenity = Amenity.objects.get(pk=amenity_pk)
-                            room.amenities.add(amenity)
-                            # or just pass : fail in silence
-                        # what if user send amenities that does not exist? or wrong datatype?
-                        serializer = RoomDetailSerializer(room)
-                        return Response(serializer.data)
-                except Exception:
-                    raise ParseError("amenity not found")
-            else:
-                return Response(serializer.errors)
-            # handle attributes that has an relation with others
+
+        serializer = RoomDetailSerializer(data=request.data)
+        if serializer.is_valid():
+            category_pk = request.data.get("category")
+            if not category_pk:
+                raise ParseError(
+                    "Category is required"
+                )  # 400 bad request for wrong data
+            try:
+                category = Category.objects.get(pk=category_pk)
+                if category.kind == Category.CategoryKindChocies.EXPERIENCES:
+                    raise ParseError("Cateogory kind should be rooms")
+            except Category.DoesNotExist:
+                raise ParseError("Category does not exist")
+            try:
+                # print(request.data.get('amenities'))
+                with transaction.atomic():
+                    room = serializer.save(  # tells who is the user
+                        owner=request.user,  # this goes to validated_data para field of create() method
+                        category=category,
+                    )
+                    # when u post user provided data, it automatically call create() method
+                    amenities = request.data.get("amenities")
+                    for amenity_pk in amenities:
+                        amenity = Amenity.objects.get(pk=amenity_pk)
+                        room.amenities.add(amenity)
+                        # or just pass : fail in silence
+                    # what if user send amenities that does not exist? or wrong datatype?
+                    serializer = RoomDetailSerializer(room)
+                    return Response(serializer.data)
+            except Exception:
+                raise ParseError("amenity not found")
         else:
-            raise NotAuthenticated
+            return Response(serializer.errors)
+        # handle attributes that has an relation with others
 
 
 class RoomDetails(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_object(self, pk):
         try:
             room = Room.objects.get(pk=pk)
@@ -159,9 +162,7 @@ class RoomDetails(APIView):
             return Response(serializer.error)
 
     def delete(self, request, pk):  # delete handle
-        room = self.get_object(pk=pk)
-        if not request.user.is_authenticated:
-            raise NotAuthenticated
+        room = self.get_object(pk)
         if room.owner != request.user:
             raise PermissionDenied
         room.delete()
@@ -169,6 +170,8 @@ class RoomDetails(APIView):
 
 
 class RoomPhotos(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get_object(self, pk):
         try:
             return Room.objects.get(pk=pk)
@@ -177,8 +180,6 @@ class RoomPhotos(APIView):
 
     def post(self, request, pk):
         room = self.get_object(pk)
-        if not request.user.is_authenticated:
-            raise NotAuthenticated
         if request.user != room.owner:
             raise PermissionDenied
         serializer = PhotoSerializer(data=request)
