@@ -43,7 +43,7 @@ CUSTOM_APPS = [
     "bookings.apps.BookingsConfig",
     "medias.apps.MediasConfig",
     "direct_messages.apps.DirectMessagesConfig",
-    ]
+]
 
 SYSTEM_APPS = [
     "django.contrib.admin",
@@ -143,3 +143,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Auth
 AUTH_USER_MODEL = "users.User"
+
+MEDIA_ROOT = "uploads"  # uploaded file location in "upload dir"
+MEDIA_URL = "user-uploads/"  # just for url purposes

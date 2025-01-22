@@ -2,6 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from .models import Amenity, Room
 from users.serializers import UserSerializer
 from categories.serializers import CategorySerializer
+from rest_framework import serializers
 
 
 class AmenitySerializer(ModelSerializer):
@@ -14,6 +15,11 @@ class AmenitySerializer(ModelSerializer):
 
 
 class RoomListSerializer(ModelSerializer):
+    rating = serializers.SerializerMethodField()
+
+    def get_rating(self, room):
+        return room.rating()
+
     class Meta:
         model = Room
         fields = (
@@ -22,6 +28,7 @@ class RoomListSerializer(ModelSerializer):
             "country",
             "city",
             "price",
+            "rating",
         )
 
 
@@ -33,10 +40,19 @@ class RoomDetailSerializer(ModelSerializer):
     )  # many=True - show objects in list type
     category = CategorySerializer(read_only=True)
     # because above attributes have relationships, those need manual save or connect
+    rating = serializers.SerializerMethodField()
+    is_owner = serializers.SerializerMethodField()
 
     class Meta:
         model = Room
         fields = "__all__"
+
+    def get_rating(self, room):
+        return room.rating()
+
+    def get_is_owner(self, room):
+        request = self.context["request"]
+        return room.owner == request.user
 
     #  depth = 1  # expanding relation easily
 

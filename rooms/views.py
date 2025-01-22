@@ -1,10 +1,16 @@
 # from django.shortcuts import render
+from django.conf import settings
 
 # Create your views here.
 from rest_framework.views import APIView
 from django.db import transaction  # error -> all the db taken back
 from rest_framework.response import Response
-from rest_framework.exceptions import NotFound, NotAuthenticated, ParseError
+from rest_framework.exceptions import (
+    NotFound,
+    NotAuthenticated,
+    ParseError,
+    PermissionDenied,
+)
 from rest_framework.status import HTTP_204_NO_CONTENT
 from .models import Amenity, Room
 from .serializers import (
@@ -13,6 +19,7 @@ from .serializers import (
     RoomDetailSerializer,
 )
 from categories.models import Category
+from medias.serializers import PhotoSerializer
 
 """
 api/v1/rooms/amenities/1
@@ -97,25 +104,24 @@ class Rooms(APIView):
                         raise ParseError("Cateogory kind should be rooms")
                 except Category.DoesNotExist:
                     raise ParseError("Category does not exist")
-                # print(request.data.get('amenities'))
-                room = serializer.save(  # tells who is the user
-                    owner=request.user,  # this goes to validated_data para field of create() method
-                    category=category,
-                )
-                # when u post user provided data, it automatically call create() method
-
-                amenities = request.data.get("amenities")
-                for amenity_pk in amenities:
-                    try:
-                        amenity = Amenity.objects.get(pk=amenity_pk)
-                        room.amenities.add(amenity)
-                    except Amenity.DoesNotExist:
-                        room.delete()
-                        raise ParseError(f"amenity with ID {amenity_pk} not found")
-                        # or just pass : fail in silence
-                # what if user send amenities that does not exist? or wrong datatype?
-                serializer = RoomDetailSerializer(room)
-                return Response(serializer.data)
+                try:
+                    # print(request.data.get('amenities'))
+                    with transaction.atomic():
+                        room = serializer.save(  # tells who is the user
+                            owner=request.user,  # this goes to validated_data para field of create() method
+                            category=category,
+                        )
+                        # when u post user provided data, it automatically call create() method
+                        amenities = request.data.get("amenities")
+                        for amenity_pk in amenities:
+                            amenity = Amenity.objects.get(pk=amenity_pk)
+                            room.amenities.add(amenity)
+                            # or just pass : fail in silence
+                        # what if user send amenities that does not exist? or wrong datatype?
+                        serializer = RoomDetailSerializer(room)
+                        return Response(serializer.data)
+                except Exception:
+                    raise ParseError("amenity not found")
             else:
                 return Response(serializer.errors)
             # handle attributes that has an relation with others
@@ -133,7 +139,10 @@ class RoomDetails(APIView):
 
     def get(self, request, pk):
         room = self.get_object(pk=pk)
-        serializer = RoomDetailSerializer(room)
+        serializer = RoomDetailSerializer(
+            room,
+            context={"request": request},
+        )
         return Response(serializer.data)
 
     def put(self, request, pk):
@@ -149,6 +158,33 @@ class RoomDetails(APIView):
         else:
             return Response(serializer.error)
 
-    def delete(self, request, pk):
-        self.get_object(pk=pk).delete()
-        return Response(HTTP_204_NO_CONTENT)
+    def delete(self, request, pk):  # delete handle
+        room = self.get_object(pk=pk)
+        if not request.user.is_authenticated:
+            raise NotAuthenticated
+        if room.owner != request.user:
+            raise PermissionDenied
+        room.delete()
+        return Response(status=HTTP_204_NO_CONTENT)
+
+
+class RoomPhotos(APIView):
+    def get_object(self, pk):
+        try:
+            return Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            raise NotFound
+
+    def post(self, request, pk):
+        room = self.get_object(pk)
+        if not request.user.is_authenticated:
+            raise NotAuthenticated
+        if request.user != room.owner:
+            raise PermissionDenied
+        serializer = PhotoSerializer(data=request)
+        if serializer.is_valid():
+            photo = serializer.save(room=room)
+            serializer = PhotoSerializer(photo)
+            return Response(serializer.data)
+        else:
+            return Response(serializer.errors)
