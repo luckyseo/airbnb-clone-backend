@@ -31,6 +31,7 @@ ALLOWED_HOSTS = []
 # Application definition
 THIRD_PARTY_APPS = [
     "rest_framework",
+    "rest_framework.authtoken",
 ]
 CUSTOM_APPS = [
     "common.apps.CommonConfig",
@@ -152,5 +153,6 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
         # tells who is autenticated user
         "config.authentication.TrustMeBroAuthentication",
+        "rest_framework.authentication.TokenAuthentication",
     ]
 }
