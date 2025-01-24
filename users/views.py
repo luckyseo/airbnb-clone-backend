@@ -19,7 +19,7 @@ class Me(APIView):
     def get(self, request):
         user = request.user
         return Response(
-            serializers.PrivateUserSerializer(user.data),
+            serializers.PrivateUserSerializer(user).data,
         )
 
     def put(self, request):
@@ -37,14 +37,14 @@ class Me(APIView):
             return Response(serializer.errors)
 
 
-class Users(APIView):
+class Users(APIView):  # generate user account!
     def post(self, request):
-        password = request.data.get("password")
+        password = request.data.get("password")  # chceck pw existence
         if not password:
-            raise ParseError
+            raise ParseError  # pw is there -> raise parseError
         serializer = serializers.PrivateUserSerializer(data=request.data)
         if serializer.is_valid():
-            user = serializer.save()
+            user = serializer.save()  # save in db
             user.set_password(password)  # never store raw password like user.pw =pw
             user.save()
             serializer = serializers.PrivateUserSerializer(user)
@@ -59,7 +59,7 @@ class PublicUser(APIView):
             user = User.objects.get(username=username)
         except User.DoesNotExist:
             raise NotFound
-        serializer = serializers.PrivateUserSerializer(user)
+        serializer = serializers.PublicSerializer(user)
         return Response(serializer.data)
 
 
@@ -75,7 +75,7 @@ class ChangePassword(APIView):
             raise ParseError
         if user.check_password(old_password):
             user.set_password(new_password)
-            user.save()
+            user.save()  # HAS TO BE SAVED
             return Response(status=status.HTTP_200_OK)
         else:
             raise ParseError
@@ -95,7 +95,7 @@ class LogIn(APIView):
         )
         if user:
             login(request, user)  # create sesesion on the backend and cookies
-            return Response({"ok": "welcome"})
+            return Response({"ok": "Logged in! Welcome"})
         else:
             return Response({"error": "wrong password"})
 

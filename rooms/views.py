@@ -21,6 +21,7 @@ from .serializers import (
 from categories.models import Category
 from medias.serializers import PhotoSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from reviews.serializers import ReviewSerializer
 
 """
 api/v1/rooms/amenities/1
@@ -167,6 +168,26 @@ class RoomDetails(APIView):
             raise PermissionDenied
         room.delete()
         return Response(status=HTTP_204_NO_CONTENT)
+
+
+class RoomReviews(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get_object(self, request, pk):
+        try:
+            return Room.objects.get(pk=pk)
+        except Room.DoesNotExist:
+            raise NotFound
+
+    def post(self, request, pk):
+        serializer = ReviewSerializer(data=request.data)
+        if serializer.is_valid():
+            review = serializer.save(
+                user=request.user,  # send extra data that doesn't come from user data(data=request.data)
+                room=self.get_object(pk),
+            )
+            serializer = ReviewSerializer(review)
+            return Response(serializer.data)
 
 
 class RoomPhotos(APIView):

@@ -26,3 +26,19 @@ class PrivateUserSerializer(ModelSerializer):
             "groups",
             "user_permissions",
         )
+
+
+class PublicSerializer(ModelSerializer):
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "avatar",
+            "language",
+        )
+
+    """
+    add reviews /rooms/ cities user traveled to
+    """

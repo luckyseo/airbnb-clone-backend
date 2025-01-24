@@ -146,3 +146,11 @@ AUTH_USER_MODEL = "users.User"
 
 MEDIA_ROOT = "uploads"  # uploaded file location in "upload dir"
 MEDIA_URL = "user-uploads/"  # just for url purposes
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTINCATOIN_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+        # tells who is autenticated user
+        "config.authentication.TrustMeBroAuthentication",
+    ]
+}

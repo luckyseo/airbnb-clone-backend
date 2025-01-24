@@ -11,7 +11,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.Users.as_view()),
+    path("", views.Users.as_view()),  # when ppl go to /users and do nothing else
     path("me", views.Me.as_view()),  # path order matters!
     path("change-password", views.ChangePassword.as_view()),
     path("log-in", views.LogIn.as_view()),
