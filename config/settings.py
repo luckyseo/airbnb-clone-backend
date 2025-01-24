@@ -154,5 +154,6 @@ REST_FRAMEWORK = {
         # tells who is autenticated user
         "config.authentication.TrustMeBroAuthentication",
         "rest_framework.authentication.TokenAuthentication",
+        "config.authentication.JWTAuthentication",
     ]
 }
